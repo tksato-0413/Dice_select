@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'dart:math';
 
@@ -30,13 +32,21 @@ class _DicePageState extends State<DicePage> {
   int diceCount = 1;
   int diceSides = 6;
   List<int> diceResults = [1];
+  TextEditingController minController = TextEditingController();
+  TextEditingController maxController = TextEditingController();
+  int? minSide;
+  int? maxSide;
+ 
 
-  void rollDice(){
+  void rollDice() {
     setState(() {
-      diceResults = List.generate(diceCount, (index) => Random().nextInt(diceSides) + 1);
+      if (minSide != null && maxSide != null && minSide! < maxSide!) {
+        diceResults = List.generate(diceCount, (index) => Random().nextInt(maxSide! - minSide! + 1) + minSide!);
+      } else {
+        diceResults = List.generate(diceCount, (index) => Random().nextInt(diceSides) + 1);
+      }
     });
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,7 +58,7 @@ class _DicePageState extends State<DicePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Row(
+            Row( //ダイスの個数を決定する部分
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Text('Number of Dice:'),
@@ -70,7 +80,7 @@ class _DicePageState extends State<DicePage> {
                 )
               ],
             ),
-            Row(
+            Row( // 何面ダイスを振るかを決定するための部分
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Text('Number of sides:'),
@@ -90,6 +100,46 @@ class _DicePageState extends State<DicePage> {
                     });
                   }
                 )
+              ],
+            ),
+            Row( // ダイスの最小値と最大値を決定するための部分
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text('Min side:'),
+                SizedBox(width: 10,),
+                SizedBox(
+                  width: 50,
+                  child: TextField(
+                    controller: minController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 20,),
+                Text('Max side'),
+                SizedBox(width: 10,),
+                SizedBox(
+                  width: 50,
+                  child: TextField(
+                    controller: maxController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 10,),
+                ElevatedButton(
+                  onPressed: (){
+                    setState((){
+                      minSide = int.tryParse(minController.text);
+                      maxSide = int.tryParse(maxController.text);
+                    });
+                  },
+                  child: Text('Set')
+                ),
               ],
             ),
             SizedBox(height: 20.0),
