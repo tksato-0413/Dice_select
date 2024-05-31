@@ -2,6 +2,7 @@ import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'favorites.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,6 +32,7 @@ class DicePage extends StatefulWidget {
 class _DicePageState extends State<DicePage> {
   int diceCount = 1;
   int diceSides = 6;
+  int dicesum = 1; 
   List<int> diceResults = [1];
   TextEditingController minController = TextEditingController();
   TextEditingController maxController = TextEditingController();
@@ -39,16 +41,53 @@ class _DicePageState extends State<DicePage> {
  
 
   void rollDice() {
+      if (maxSide != null && maxSide !> 1000){
+        showErrorDialog(context, 'Max value should not exceed 999');
+        return;
+      }
     setState(() {
       if (minSide != null && maxSide != null && minSide! < maxSide!) {
         diceResults = List.generate(diceCount, (index) => Random().nextInt(maxSide! - minSide! + 1) + minSide!);
       } else {
         diceResults = List.generate(diceCount, (index) => Random().nextInt(diceSides) + 1);
       }
+      dicesum = diceResults.reduce((a,b) => a+b); //合計値
     });
   }
+
+  void showErrorDialog(BuildContext context, String message){
+    showDialog(
+      context: context,
+      builder: (BuildContext context){
+        return AlertDialog(
+          title: Text('Error'),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK')
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  double calculateFontSize(int maxValue){
+    if (maxValue <= 99) {
+      return 40.0;
+    } else {
+      return 40.0;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    int maxDigits = diceResults.isNotEmpty ? diceResults.map((e) => e.toString().length).reduce((a,b) => a > b ? a:b) : 1;
+    int maxValue = int.parse('9' * maxDigits); 
+    double fontSize = calculateFontSize(maxValue);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -148,25 +187,45 @@ class _DicePageState extends State<DicePage> {
               spacing: 16.0,
               runSpacing: 16.0,
               children: diceResults.map((result) {
-                return Container(
-                  padding: EdgeInsets.all(16.0),
-                  margin: EdgeInsets.all(8.0),
-                  decoration: BoxDecoration(
-                    color: Colors.blueAccent,
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  child: Text(
-                    result.toString(),
-                    style: TextStyle(fontSize: 50, color: Colors.white),
-                    textAlign: TextAlign.center,
+                return Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child : Container(
+                    width: 110,
+                    height: 80,
+                    padding: EdgeInsets.all(16.0),
+                    decoration: BoxDecoration(
+                      color: Colors.blueAccent,
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: Text(
+                      result.toString(),
+                      style: TextStyle(fontSize: fontSize, color: Colors.white),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 );
               }).toList(),
             ),
-            SizedBox(height: 20.0),
-            ElevatedButton(
-              onPressed: rollDice,
-              child: Text('Roll Dice'),
+            SizedBox(height: 20,),
+            SizedBox(
+              width: 200,
+              height: 60,
+              child: ElevatedButton(
+                onPressed: rollDice,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                ),
+                child: Text(
+                  'Roll Dice',
+                  style: TextStyle(fontSize: 24),
+                ),
+              ),
+            ),
+            SizedBox(height: 20,),
+            Text(
+              'SUM: $dicesum',
+              style: TextStyle(fontSize: 30),
             ),
           ],
         ),
