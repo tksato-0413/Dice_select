@@ -75,6 +75,34 @@ class _DicePageState extends State<DicePage> {
     );
   }
 
+  void _showSaveDialog(BuildContext context){
+    String name = '';
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text ('Save Favorite'),
+          content: TextField(
+            onChanged: (value){
+              name = value;
+            },
+            decoration: InputDecoration(
+              hintText: 'Enter name',
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: (){
+                Navigator.of(context).pop();
+              },
+              child: Text('Save'),
+            )
+          ]
+        );
+      }
+    );
+  }
+
   double calculateFontSize(int maxValue){
     if (maxValue <= 99) {
       return 40.0;
@@ -230,6 +258,13 @@ class _DicePageState extends State<DicePage> {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: (){
+          _showSaveDialog(context);
+        },
+        tooltip: 'Save Favorite',
+        child: Icon(Icons.favorite),
+        ),
     );
   }
 }
