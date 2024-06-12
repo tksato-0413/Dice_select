@@ -30,7 +30,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_hooks: ^0.18.0
+  flutter_hooks: ^0.20.5
+  sqflite: ^2.0.0+3
+  path: ^1.8.0
 
 
 

@@ -1,8 +1,10 @@
 import 'dart:ffi';
 
 import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart';
 import 'dart:math';
 import 'favorites.dart';
+import 'favorite_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -72,34 +74,6 @@ class _DicePageState extends State<DicePage> {
           ],
         );
       },
-    );
-  }
-
-  void _showSaveDialog(BuildContext context){
-    String name = '';
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text ('Save Favorite'),
-          content: TextField(
-            onChanged: (value){
-              name = value;
-            },
-            decoration: InputDecoration(
-              hintText: 'Enter name',
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: (){
-                Navigator.of(context).pop();
-              },
-              child: Text('Save'),
-            )
-          ]
-        );
-      }
     );
   }
 
@@ -255,16 +229,24 @@ class _DicePageState extends State<DicePage> {
               'SUM: $dicesum',
               style: TextStyle(fontSize: 30),
             ),
+            SizedBox(
+              width: 80,
+              height: 40,
+              child: IconButton(
+                icon: Icon(Icons.star, color: Colors.yellow, size: 50),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => FavoriteScreen(factory: databaseFactory),
+                    ),
+                  );
+                },
+              )
+            ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: (){
-          _showSaveDialog(context);
-        },
-        tooltip: 'Save Favorite',
-        child: Icon(Icons.favorite),
-        ),
     );
   }
 }
