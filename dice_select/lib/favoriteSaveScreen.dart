@@ -3,16 +3,16 @@ import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/src/exception.dart';
 import 'favorites.dart';
 
-class FavoriteScreen extends StatefulWidget {
+class FavoriteSaveScreen extends StatefulWidget {
   final DatabaseFactory factory;
 
-  const FavoriteScreen({Key? key, required this.factory}) : super(key: key);
+  const FavoriteSaveScreen({Key? key, required this.factory}) : super(key: key);
 
   @override
-  _FavoriteScreenState createState() => _FavoriteScreenState();
+  _FavoriteSaveScreenState createState() => _FavoriteSaveScreenState();
 }
 
-class _FavoriteScreenState extends State<FavoriteScreen>{
+class _FavoriteSaveScreenState extends State<FavoriteSaveScreen>{
   final _nameController = TextEditingController();
   final _diceCountController = TextEditingController();
   final _minSideController = TextEditingController();
@@ -37,7 +37,10 @@ class _FavoriteScreenState extends State<FavoriteScreen>{
 
     try {
       await helper.open();
-      await helper.insert(1, name, diceCount, minSide, maxSide);
+      List<Map<String, dynamic>> favorites = await helper.fetchAll();
+      int id = favorites.isNotEmpty ? (favorites.map((f) => f['id']).reduce((a,b) => a>b ? a : b)+1):1;
+      await helper.insert(id, name, diceCount, minSide, maxSide);
+      print("Saved Favorite: $name, $diceCount, $minSide, $maxSide");
     } on SqfliteDatabaseException catch (e) {
       print (e.message);
     } finally {

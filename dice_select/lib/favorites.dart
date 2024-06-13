@@ -79,6 +79,10 @@ class FavoriteHelper {
     );
   }
 
+  Future<List<Map<String, dynamic>>> fetchAll() async{
+    return await _db.query(_tableName);
+  }
+
   Future<FavoriteCondition?> fetch(int id) async {
     List<Map> maps = await _db.query(
       _tableName,

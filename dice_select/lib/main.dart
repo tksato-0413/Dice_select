@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'dart:math';
 import 'favorites.dart';
-import 'favorite_screen.dart';
+import 'favoriteSaveScreen.dart';
+import 'FavoriteListScreen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,6 +33,8 @@ class DicePage extends StatefulWidget {
 }
 
 class _DicePageState extends State<DicePage> {
+  List<FavoriteCondition> _favorites = [];
+  FavoriteCondition? _selectedFavorite;
   int diceCount = 1;
   int diceSides = 6;
   int dicesum = 1; 
@@ -40,7 +43,35 @@ class _DicePageState extends State<DicePage> {
   TextEditingController maxController = TextEditingController();
   int? minSide;
   int? maxSide;
+
+  @override
+  void initinstnce() {
+    super.initState();
+    _loadFavorites();
+  }
  
+ Future<void> _loadFavorites() async {
+  var helper = FavoriteHelper(databaseFactory);
+  try{
+    await helper.open();
+    List<Map<String, dynamic>> maps = await helper.fetchAll();
+    setState(() {
+      _favorites = maps.map((map) => FavoriteCondition(
+        map['id'],
+        map['name'],
+        map['diceCount'],
+        map['minSide'],
+        map['maxSide'],
+      )).toList();
+    });
+
+    print("Fetched Favorites: $_favorites");
+  } catch (e) {
+    print(e);
+  } finally {
+    await helper.close();
+  }
+ }
 
   void rollDice() {
       if (maxSide != null && maxSide !> 1000){
@@ -229,20 +260,65 @@ class _DicePageState extends State<DicePage> {
               'SUM: $dicesum',
               style: TextStyle(fontSize: 30),
             ),
-            SizedBox(
-              width: 80,
-              height: 40,
-              child: IconButton(
-                icon: Icon(Icons.star, color: Colors.yellow, size: 50),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => FavoriteScreen(factory: databaseFactory),
-                    ),
-                  );
-                },
-              )
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                DropdownButton<FavoriteCondition>(
+                  hint: Text('Select Favorite'),
+                  value: _selectedFavorite,
+                  onChanged: (FavoriteCondition? newValue) {
+                    setState(() {
+                      _selectedFavorite = newValue;
+                    });
+                  },
+                  items: _favorites.map((FavoriteCondition favorite) {
+                    return DropdownMenuItem<FavoriteCondition>(
+                      value: favorite,
+                      child: Text(favorite.name),
+                    );
+                  }).toList(),
+                ),           
+
+                SizedBox(
+                  width: 80,
+                  height: 40,
+                  child: IconButton(
+                    icon: Icon(Icons.star, color: Colors.yellow, size: 50),
+                    onPressed: () async {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FavoriteSaveScreen(factory: databaseFactory),
+                        ),
+                      );
+                      await _loadFavorites();
+                      setState(() {
+                        _selectedFavorite = null;
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: (){
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FavoriteListScreen(factory: databaseFactory)
+                  ),
+                );
+              },
+              child: Text('View Favorite'),
+            ),
+            SizedBox(height: 20),
+            if (_selectedFavorite != null)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                'Selected: ${_selectedFavorite!.name}',
+                )
             ),
           ],
         ),
